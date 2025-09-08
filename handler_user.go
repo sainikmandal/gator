@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/sainikmandal/gator/internal/database"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/sainikmandal/gator/internal/database"
 )
 
 func handlerLogin(s *state, cmd command) error {
-	if len(cmd.Args) < 1 {
+	if len(cmd.Args) != 1 {
 		return fmt.Errorf("username is required")
 	}
 	name := cmd.Args[0]
@@ -30,7 +31,7 @@ func handlerLogin(s *state, cmd command) error {
 }
 
 func handlerRegister(s *state, cmd command) error {
-	if len(cmd.Args) < 1 {
+	if len(cmd.Args) != 1 {
 		return fmt.Errorf("username is required for registration")
 	}
 	name := cmd.Args[0]
@@ -59,6 +60,29 @@ func handlerRegister(s *state, cmd command) error {
 
 	fmt.Printf("User registered successfully:\nID: %s\nCreatedAt: %s\nUpdatedAt: %s\nName: %s\n",
 		user.ID, user.CreatedAt, user.UpdatedAt, user.Name)
+
+	return nil
+}
+
+func handlerListUsers(s *state, cmd command) error {
+	currentUser := s.cfg.CurrentUserName
+
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	if len(users) == 0 {
+		return fmt.Errorf("No user found!")
+	}
+
+	for _, user := range users {
+		if user == currentUser {
+			fmt.Println(user + " (current)")
+		} else {
+			fmt.Println(user)
+		}
+	}
 
 	return nil
 }
