@@ -6,9 +6,14 @@ import (
 )
 
 func handlerReset(s *state, cmd command) error {
-	err := s.db.ResetUsers(context.Background())
-	if err == nil {
-		fmt.Println("reset successful!")
+	if err := s.db.ResetUsers(context.Background()); err != nil {
+		return err
 	}
-	return err
+
+	if err := s.cfg.ClearUser(); err != nil {
+		return err
+	}
+
+	fmt.Println("reset successful!")
+	return nil
 }

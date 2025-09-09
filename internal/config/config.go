@@ -67,3 +67,9 @@ func write(cfg Config) error {
 
 	return nil
 }
+
+// to be used in reset command
+func (cfg *Config) ClearUser() error {
+	cfg.CurrentUserName = ""
+	return write(*cfg)
+}
