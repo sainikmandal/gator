@@ -9,38 +9,45 @@ import (
 	"github.com/sainikmandal/gator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 2 {
-		return fmt.Errorf("not enough args")
+		return fmt.Errorf("usage: addfeed <name> <url>")
 	}
 
-	name := cmd.Args[0]
-	url := cmd.Args[1]
+	feedName := cmd.Args[0]
+	feedURL := cmd.Args[1]
 
-	currentUser := s.cfg.CurrentUserName
-	if currentUser == "" {
-		return fmt.Errorf("no current user set, please register or login first")
-	}
-
-	user, err := s.db.GetUserByName(context.Background(), currentUser)
+	feed, err := s.db.GetFeedByURL(context.Background(), feedURL)
 	if err != nil {
-		return fmt.Errorf("could not find current user in DB: %w", err)
+		now := time.Now()
+		feed, err = s.db.CreateFeed(context.Background(), database.CreateFeedParams{
+			ID:        uuid.New(),
+			CreatedAt: now,
+			UpdatedAt: now,
+			Name:      feedName,
+			Url:       feedURL,
+			UserID:    user.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("could not create feed: %w", err)
+		}
+		fmt.Printf("Created feed: %s (%s)\n", feed.Name, feed.Url)
+	} else {
+		fmt.Printf("Feed already exists: %s (%s)\n", feed.Name, feed.Url)
 	}
 
-	params := database.CreateFeedParams{
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name:      name,
-		Url:       url,
 		UserID:    user.ID,
-	}
-
-	feed, err := s.db.CreateFeed(context.Background(), params)
+		FeedID:    feed.ID,
+	})
 	if err != nil {
-		return fmt.Errorf("could not create feed: %w", err)
+		return fmt.Errorf("could not create feed follow: %w", err)
 	}
 
-	fmt.Println("Feed created:", feed)
+	fmt.Printf("%s is now following %s\n", user.Name, feed.Name)
+
 	return nil
 }

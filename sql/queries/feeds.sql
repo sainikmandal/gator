@@ -13,3 +13,8 @@ FROM feeds f
 JOIN users u ON f.user_id = u.id
 ORDER BY f.created_at DESC;
 
+-- name: GetFeedByURL :one
+SELECT *
+FROM feeds
+WHERE url = $1;
+
