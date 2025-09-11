@@ -8,7 +8,11 @@ A great man once said, we do pointless things because they are hard and we can d
 
 ## Prerequisites
 Now lets pretend that someone is reading this and (pretend 10 times that they are thinking of installing this)
+Make sure you star my repo or it won't work.
 Make sure you have Go and Postgres installed!
+I am assuming you are using linux or mac.
+If you are using windows, please follow the detailed instructions bellow:
+Step 1: Install linux
 
 ---
 
