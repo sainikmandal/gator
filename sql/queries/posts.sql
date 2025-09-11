@@ -1,4 +1,5 @@
--- name: CreatePost :one
+
+-- name: CreatePost :exec
 INSERT INTO posts (
     id,
     created_at,
@@ -9,14 +10,25 @@ INSERT INTO posts (
     published_at,
     feed_id
 ) VALUES (
-    gen_random_uuid(),
-    NOW(),
-    NOW(),
-    $1,
-    $2,
-    $3,
-    $4,
-    $5
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
-RETURNING *;
+ON CONFLICT (url) DO NOTHING;
+
+-- name: GetPostsForUser :many
+SELECT
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.title,
+    posts.url,
+    posts.description,
+    posts.published_at,
+    posts.feed_id
+FROM posts
+INNER JOIN feed_follows
+    ON posts.feed_id = feed_follows.feed_id
+WHERE feed_follows.user_id = $1
+ORDER BY posts.published_at DESC
+LIMIT $2;
+
 
